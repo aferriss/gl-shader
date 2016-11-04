@@ -33,8 +33,8 @@ proto.bind = function() {
 
   // ensuring that we have the right number of enabled vertex attributes
   var i
-  var newAttribCount = this.gl.getProgramParameter(this.program, this.gl.ACTIVE_ATTRIBUTES) // more robust approach
-  //var newAttribCount = Object.keys(this.attributes).length // avoids the probably immaterial introspection slowdown
+  // var newAttribCount = this.gl.getProgramParameter(this.program, this.gl.ACTIVE_ATTRIBUTES) // more robust approach
+  var newAttribCount = Object.keys(this.attributes).length // avoids the probably immaterial introspection slowdown
   var oldAttribCount = this.gl.lastAttribCount
   if(newAttribCount > oldAttribCount) {
     for(i = oldAttribCount; i < newAttribCount; i++) {
@@ -89,9 +89,10 @@ function compareAttributes(a, b) {
 proto.update = function(
     vertSource
   , fragSource
-  , uniforms
-  , attributes) {
-
+  , numUniforms
+  ) {
+  var uniforms = undefined;
+  var attributes = undefined;
   //If only one object passed, assume glslify style output
   if(!fragSource || arguments.length === 1) {
     var obj = vertSource
@@ -126,13 +127,13 @@ proto.update = function(
     gl.attachShader(testProgram, wrapper.fragShader)
     gl.attachShader(testProgram, wrapper.vertShader)
     gl.linkProgram(testProgram)
-    if(!gl.getProgramParameter(testProgram, gl.LINK_STATUS)) {
-      var errLog = gl.getProgramInfoLog(testProgram)
-      throw new GLError(errLog, 'Error linking program:' + errLog)
-    }
+    // if(!gl.getProgramParameter(testProgram, gl.LINK_STATUS)) {
+    //   var errLog = gl.getProgramInfoLog(testProgram)
+    //   throw new GLError(errLog, 'Error linking program:' + errLog)
+    // }
 
     //Load data from runtime
-    uniforms   = uniforms   || runtime.uniforms(gl, testProgram)
+    uniforms   = uniforms   || runtime.uniforms(gl, testProgram, numUniforms)
     attributes = attributes || runtime.attributes(gl, testProgram)
 
     //Release test program
@@ -243,22 +244,45 @@ proto.update = function(
 }
 
 //Compiles and links a shader program with the given attribute and vertex list
+// function createShader(
+//     gl
+//   , vertSource
+//   , fragSource
+//   , uniforms
+//   , attributes
+//   ) {
+
+//   var shader = new Shader(gl)
+
+//   shader.update(
+//       vertSource
+//     , fragSource
+
+//     )
+
+//   return shader
+// }
+
 function createShader(
     gl
   , vertSource
   , fragSource
-  , uniforms
-  , attributes) {
+  , numUniforms
+  ) {
 
   var shader = new Shader(gl)
 
   shader.update(
       vertSource
     , fragSource
-    , uniforms
-    , attributes)
+    , numUniforms
+    )
 
   return shader
 }
+
+
+
+
 
 module.exports = createShader
